@@ -18,7 +18,7 @@ STAT_FONT = pygame.font.SysFont("comicsans", 50)
 END_FONT = pygame.font.SysFont("comicsans", 70)
 
 GRAVITY = 1/4
-FPS = 120
+FPS = 1200
 RELATIVE_PERCENT=.75
 BASE_Y = 900*RELATIVE_PERCENT
 SCREEN_SIZE = (WIDTH,HEIGHT) = re_size((576,1024))
@@ -159,9 +159,7 @@ def main(genomes,config):
                 birds.pop(birds.index(bird))
 
             if len(birds)>0:
-                if BIRD_IMGS[0].get_height()<bird.rect.bottom<BASE_Y:
-                    pass #Bird is inside the screen
-                else:
+                if not BIRD_IMGS[0].get_height()<bird.rect.bottom<BASE_Y:
                     ge[birds.index(bird)].fitness -= 1
                     nets.pop(birds.index(bird))
                     ge.pop(birds.index(bird))
