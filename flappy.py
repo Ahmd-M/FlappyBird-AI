@@ -116,10 +116,13 @@ def main(genomes,config):
         birds.append(Bird(100*RELATIVE_PERCENT,random.randint(0,HEIGHT//2)))
         ge.append(genome)
     
+    baseX = 0
     score = 0
+    previous_score = score
+
     canScore = True
     running = True
-    baseX = 0
+    
     while running and len(birds)>0:
         SCREEN.blit(BG_IMG,(0,0))
         for event in pygame.event.get():
@@ -155,16 +158,20 @@ def main(genomes,config):
                 ge.pop(birds.index(bird))
                 birds.pop(birds.index(bird))
 
-            if BIRD_IMGS[0].get_height()<bird.rect.bottom<BASE_Y:
-                pass #Bird is inside the screen
-            else:
-                ge[birds.index(bird)].fitness -= 1
-                nets.pop(birds.index(bird))
-                ge.pop(birds.index(bird))
-                birds.pop(birds.index(bird))
+            if len(birds)>0:
+                if BIRD_IMGS[0].get_height()<bird.rect.bottom<BASE_Y:
+                    pass #Bird is inside the screen
+                else:
+                    ge[birds.index(bird)].fitness -= 1
+                    nets.pop(birds.index(bird))
+                    ge.pop(birds.index(bird))
+                    birds.pop(birds.index(bird))
         
 
-
+        if score>previous_score:
+            previous_score = score
+            for genome in ge:
+                genome.fitness += 5
 
         #Base stuff
         baseX -= 5*RELATIVE_PERCENT
@@ -177,7 +184,6 @@ def main(genomes,config):
         score_label = STAT_FONT.render("Score: " + str(score),1,(255,255,255))
         SCREEN.blit(score_label, (WIDTH - score_label.get_width() - 15, 10))
 
-        
         # generations
         score_label = STAT_FONT.render("Gens: " + str(gen-1),1,(255,255,255))
         SCREEN.blit(score_label, (10, 10))
@@ -186,7 +192,7 @@ def main(genomes,config):
         score_label = STAT_FONT.render("Alive: " + str(len(birds)),1,(255,255,255))
         SCREEN.blit(score_label, (10, 50))
         
-        #Updating
+        #Updating display
         pygame.display.update()
         clock.tick(FPS)
 
