@@ -107,6 +107,7 @@ class Pipe(object):
 pipe = Pipe(WIDTH)
 gen = 0
 birds =  []
+bird = Bird(100*RELATIVE_PERCENT,HEIGHT//2)
 
 def main(genomes,config):
     global gen
@@ -152,6 +153,7 @@ def main(genomes,config):
             canScore = False
         if pipe.x<0:
             canScore=True
+
 
         #Collision check
         pipes = pipe.rects()
