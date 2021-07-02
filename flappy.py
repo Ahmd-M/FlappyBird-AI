@@ -69,16 +69,18 @@ PIPE_VEL = 0
 GAP = 0
 
 class Pipe(object):
+
     global PIPE_VEL, GAP
     PIPE_VEL = 5*RELATIVE_PERCENT
     GAP = 300*RELATIVE_PERCENT
+
     def __init__(self,x):
         self.x = x
         self.minHeight = 100*RELATIVE_PERCENT
         self.maxHeight = self.minHeight + GAP
         self.height = random.randrange(int(self.minHeight), int(BASE_Y-(self.maxHeight)))
-        self.topY = self.height - PIPE_IMG.get_height()//2
-        self.bottomY = self.topY + PIPE_IMG.get_height() + GAP
+        self.topRectY = self.height - PIPE_IMG.get_height()//2
+        self.bottomRectY = self.topRectY + PIPE_IMG.get_height() + GAP
         self.rects()
         
         
@@ -97,8 +99,8 @@ class Pipe(object):
 
 
     def rects(self):
-        self.bottomRect = PIPES[0].get_rect(center = (self.x+PIPE_IMG.get_width()//2,self.bottomY))
-        self.topRect = PIPES[1].get_rect(center = (self.x+PIPE_IMG.get_width()//2,self.topY))
+        self.bottomRect = PIPES[0].get_rect(center = (self.x+PIPE_IMG.get_width()//2,self.bottomRectY))
+        self.topRect = PIPES[1].get_rect(center = (self.x+PIPE_IMG.get_width()//2,self.topRectY))
         return self.bottomRect,self.topRect
     
     
@@ -155,16 +157,10 @@ def main(genomes,config):
         pipes = pipe.rects()
         for bird in birds:
             if bird.rect.colliderect(pipes[0]) or bird.rect.colliderect(pipes[1]):
-                ge[birds.index(bird)].fitness -= 1
-                nets.pop(birds.index(bird))
-                ge.pop(birds.index(bird))
-                birds.pop(birds.index(bird))
+                decrease_fitness(ge,nets,bird,birds)
         for bird in birds:
             if not BIRD_IMGS[0].get_height()<bird.rect.bottom<BASE_Y:
-                ge[birds.index(bird)].fitness -= 1
-                nets.pop(birds.index(bird))
-                ge.pop(birds.index(bird))
-                birds.pop(birds.index(bird))
+                decrease_fitness(ge,nets,bird,birds)
         
         if not len(birds):
             pipe.x = WIDTH   
@@ -193,13 +189,15 @@ def main(genomes,config):
         alive_label = STAT_FONT.render("Alive: " + str(len(birds)),1,(255,255,255))
         SCREEN.blit(alive_label, (10, 50))
 
-        
-        
-
         #Updating display
         pygame.display.update()
         clock.tick(FPS)
 
+def decrease_fitness(ge,nets,bird,birds):
+    ge[birds.index(bird)].fitness -= 1
+    nets.pop(birds.index(bird))
+    ge.pop(birds.index(bird))
+    birds.pop(birds.index(bird))
 
 def run(config_file):
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
