@@ -1,4 +1,3 @@
-from types import prepare_class
 import pygame, neat, os, random, json, pickle
 pygame.font.init()  # init font
 pygame.init()
@@ -28,7 +27,7 @@ STAT_FONT = pygame.font.SysFont("comicsans", 50)
 END_FONT = pygame.font.SysFont("comicsans", 70)
 
 GRAVITY = 1/4
-FPS = 120
+FPS = 1200
 RELATIVE_PERCENT=.75
 BASE_Y = 900*RELATIVE_PERCENT
 SCREEN_SIZE = (WIDTH,HEIGHT) = re_size((576,1024))
@@ -141,12 +140,19 @@ def game(genomes,config):
         SCREEN.blit(BG_IMG,(0,0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                print(prev_score,score)
+                if score>prev_score:
+                    data = {'High score': score}
+                    with open('storage.txt','w') as storage_file:
+                        json.dump(data,storage_file)
+                    with open('winner.pickle','wb') as winner_file:
+                        pickle.dump(genomes[0][1],winner_file)
                 pygame.quit()
                 quit()
 
         for x, bird in enumerate(birds):
             ge[x].fitness += 0.1
-            output = nets[birds.index(bird)].activate((bird.y, abs(bird.y - pipe.topRect.bottom), abs(bird.y - pipe.bottomRect.top)))
+            output = nets[birds.index(bird)].activate((bird.y, abs(bird.y - pipe.topRectY), abs(bird.y - pipe.bottomRectY)))
             if output[0] > 0.5:
                 bird.jump()
             
