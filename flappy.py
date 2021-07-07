@@ -1,9 +1,19 @@
-import pygame, neat, os, random
+from types import prepare_class
+import pygame, neat, os, random, json, pickle
 pygame.font.init()  # init font
 pygame.init()
 
 
+'''
+    y_n = input('Replay best genome? (y/n) ')
+    if y_n.lower()=='y':
+        replay_winner = True
+    else:
+        replay_winner = False
+'''
+replay_winner = 0
 
+    
 def re_size(x):
     size = (int(x[0]*RELATIVE_PERCENT),int(x[1]*RELATIVE_PERCENT))
     return size
@@ -109,7 +119,7 @@ gen = 0
 birds =  []
 bird = Bird(100*RELATIVE_PERCENT,HEIGHT//2)
 
-def main(genomes,config):
+def game(genomes,config):
     global gen
     gen+=1
 
@@ -125,7 +135,6 @@ def main(genomes,config):
         ge.append(genome)
     
     baseX = score = 0
-    previous_score = score
     canScore = running =True
     
     while running and len(birds):
@@ -147,13 +156,15 @@ def main(genomes,config):
             bird.draw()
         pipe.draw()
 
+
         #Scoring mechanics
         if bird.x-5<pipe.x<bird.x+5 and canScore:
             score+=1
             canScore = False
+            for genome in ge:
+                genome.fitness += 5
         if pipe.x<0:
             canScore=True
-
 
         #Collision check
         pipes = pipe.rects()
@@ -166,11 +177,7 @@ def main(genomes,config):
         
         if not len(birds):
             pipe.x = WIDTH   
-
-        if score>previous_score:
-            previous_score = score
-            for genome in ge:
-                genome.fitness += 5
+            
 
         #Base stuff
         baseX -= 5*RELATIVE_PERCENT
@@ -211,11 +218,35 @@ def run(config_file):
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
 
-    winner = p.run(main, 50)
+    winner = p.run(game, 50)
     print('\nBest genome:\n{!s}'.format(winner))
 
+    if score>prev_score:
+        data = {'High score': score}
+        with open('storage.txt','w') as storage_file:
+            json.dump(data,storage_file)
+        with open('winner.pickle','wb') as winner_file:
+            pickle.dump(winner,winner_file)
+
+def replay_genome(config_path, genome_path="winner.pickle"):
+    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet, neat.DefaultStagnation, config_path)
+    with open(genome_path, "rb") as f:
+        genome = pickle.load(f)
+    genomes = [(1, genome)]
+    game(genomes,config)
 
 if __name__ == '__main__':
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config-feedforward.txt')
-    run(config_path)
+
+    try:
+        with open('storage.txt','r') as storage_file:
+            data = json.load(storage_file)
+            prev_score = data['High score']
+    except:
+        prev_score = 0
+
+    if replay_winner:
+        replay_genome(config_path)
+    else:
+        run(config_path)
